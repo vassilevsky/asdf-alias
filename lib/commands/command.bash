@@ -126,7 +126,7 @@ create_all_possible_aliases() {
 
   for version in $(echo_lines_without_symlinks *)
   do
-    for alias_function in major_release_number major_release minor_release_number minor_release pre_release
+    for alias_function in pre_release minor_release major_release minor_release_number major_release_number
     do
       alias=$($alias_function $version)
 
