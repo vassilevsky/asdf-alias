@@ -126,6 +126,8 @@ create_all_possible_aliases() {
 
   for version in $(echo_lines_without_symlinks *)
   do
+    echo
+
     for alias_function in pre_release minor_release major_release minor_release_number major_release_number
     do
       alias=$($alias_function $version)
@@ -136,6 +138,8 @@ create_all_possible_aliases() {
       fi
     done
   done
+
+  echo
 }
 
 reshim_plugin() {
