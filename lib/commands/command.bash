@@ -99,22 +99,43 @@ auto_symlink_point() {
   fi
 }
 
-pre_releases() {
-  echo_lines_without_symlinks ./*.*.*-*.* | sed -E -e 's/([0-9]+\.[0-9]+\.[0-9]+-.*)\..*/\1/' | sort -u
+major_release_number() {
+  echo $1 | sed -E -e 's/[a-z-]+([0-9]+)\.[0-9]+\.[0-9]+.*/\1/'
 }
 
-minor_releases() {
-  echo_lines_without_symlinks ./*.*.* | sed -E -e 's/([0-9]+\.[0-9]+)\.[0-9]+.*/\1/' | sort -u
+major_release() {
+  echo $1 | sed -E -e 's/([0-9]+)\.[0-9]+\.[0-9]+.*/\1/'
 }
 
-major_releases() {
-  echo_lines_without_symlinks ./*.*.* | sed -E -e 's/([0-9]+)\.[0-9]+\.[0-9]+.*/\1/' | sort -u | grep -xv 0
+minor_release() {
+  echo $1 | sed -E -e 's/([0-9]+\.[0-9]+)\.[0-9]+.*/\1/'
 }
 
-recommended_aliases() {
-  major_releases
-  minor_releases
-  pre_releases
+minor_release_number() {
+  echo $1 | sed -E -e 's/[a-z-]+([0-9]+\.[0-9]+)\.[0-9]+.*/\1/'
+}
+
+pre_release() {
+  echo $1 | sed -E -e 's/([0-9]+\.[0-9]+\.[0-9]+-.*)\..*/\1/'
+}
+
+create_all_possible_aliases() {
+  local version
+  local alias_function
+  local alias
+
+  for version in $(echo_lines_without_symlinks *)
+  do
+    for alias_function in major_release_number major_release minor_release_number minor_release pre_release
+    do
+      alias=$($alias_function $version)
+
+      if [ "$alias" != "$version" ]
+      then
+        ln -nsfv $version $alias
+      fi
+    done
+  done
 }
 
 reshim_plugin() {
@@ -173,9 +194,7 @@ main() {
           ;;
         --auto | --all)
           cleanup_invalid
-          for point in $(recommended_aliases); do
-            auto_symlink_point "$point"
-          done
+          create_all_possible_aliases
           reshim_plugin
           ;;
         -*)
